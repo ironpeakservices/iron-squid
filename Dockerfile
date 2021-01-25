@@ -15,11 +15,13 @@ RUN apt-get source squid \
 
 WORKDIR /squid/squid/
 
-RUN sed 's/--with-gnutls/--with-gnutls --with-default-user=nonroot --enable-ssl --enable-ssl-crtd --with-openssl --disable-ipv6/' debian/rules \
+RUN sed -i 's/--with-gnutls/--with-gnutls --with-default-user=nonroot --enable-ssl --enable-ssl-crtd --with-openssl --disable-ipv6/' debian/rules \
   && debuild -us -uc \
   && mkdir -p /static/ \
   && cp ./debian/squid/usr/sbin/squid /static/ \
   && ldd "/static/squid" | tr -s ' ' | grep '=> /' | awk '{print $3}' | xargs cp --parents -t /static/
+
+RUN cat debian/rules | grep openssl ; exit 1
 
 #
 # ---
@@ -28,9 +30,9 @@ RUN sed 's/--with-gnutls/--with-gnutls --with-default-user=nonroot --enable-ssl 
 FROM gcr.io/distroless/base-debian10:nonroot
 
 COPY --from=build --chown=nonroot /static/ /
-COPY --chown=nonroot docker/squid.conf /
-RUN /squid -k check -c /squid.conf
+COPY --chown=nonroot docker/squid.conf /etc/squid/squid.conf
 
 USER nonroot
-EXPOSE 3128
-ENTRYPOINT ["/squid", "--foreground", "-c /squid.conf"]
+EXPOSE 3128 3129
+ENTRYPOINT ["/squid"]
+CMD ["--foreground"]
