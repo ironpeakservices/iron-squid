@@ -21,8 +21,6 @@ RUN sed -i 's/--with-gnutls/--with-gnutls --with-default-user=nonroot --enable-s
   && cp ./debian/squid/usr/sbin/squid /static/ \
   && ldd "/static/squid" | tr -s ' ' | grep '=> /' | awk '{print $3}' | xargs cp --parents -t /static/
 
-RUN cat debian/rules | grep openssl ; exit 1
-
 #
 # ---
 #
