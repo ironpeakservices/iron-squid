@@ -28,11 +28,11 @@ RUN cat debian/rules | grep openssl ; exit 1
 #
 
 FROM gcr.io/distroless/base-debian10:nonroot
-
-COPY --from=build --chown=nonroot /static/ /
-COPY --chown=nonroot docker/squid.conf /etc/squid/squid.conf
-
 USER nonroot
+
+COPY --from=build /static/ /
+COPY docker/squid.conf /etc/squid/squid.conf
+
 EXPOSE 3128 3129
 ENTRYPOINT ["/squid"]
-CMD ["--foreground"]
+CMD ["--foreground", "-f /etc/squid/squid.conf"]
